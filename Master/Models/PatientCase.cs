@@ -15,5 +15,7 @@ namespace Master.Models
         public double Bmi { get; set; }
         public string Symptoms { get; set; }
         public string Diagnose { get; set; }
+        public virtual ClassModel ClassModel { get; set; }
+
     }
 }

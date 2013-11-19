@@ -15,6 +15,8 @@ namespace Master.Implementation
 
         public static void Add(PatientCase patientCase)
         {
+            var classModel = ClassRepository.GetByDiagnose(patientCase.Diagnose);
+            patientCase.ClassModel = classModel;
             _db.PatientCases.Add(patientCase);
             _db.SaveChanges();
         }
@@ -31,7 +33,17 @@ namespace Master.Implementation
 
         public static List<PatientCase> GetAll()
         {
-            return _db.PatientCases.ToList();
+            var list =  _db.PatientCases.ToList();
+            /*
+            foreach (var patientCase in list)
+            {
+                var classId = ClassRepository.GetByDiagnose(patientCase.Diagnose);
+                patientCase.ClassModel = classId;
+            }
+            _db.SaveChanges();
+            
+             */
+            return list;
         }
     }
 }

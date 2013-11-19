@@ -50,13 +50,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Implementation\ClassRepository.cs" />
     <Compile Include="Implementation\DomainDbContext.cs" />
     <Compile Include="Implementation\PatientCaseRepository.cs" />
     <Compile Include="Migrations\201311191006096_tt.cs" />
     <Compile Include="Migrations\201311191006096_tt.Designer.cs">
       <DependentUpon>201311191006096_tt.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201311191207363_Added ClassModel.cs" />
+    <Compile Include="Migrations\201311191207363_Added ClassModel.Designer.cs">
+      <DependentUpon>201311191207363_Added ClassModel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\ClassModel.cs" />
     <Compile Include="Models\PatientCase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -67,6 +73,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201311191006096_tt.resx">
       <DependentUpon>201311191006096_tt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311191207363_Added ClassModel.resx">
+      <DependentUpon>201311191207363_Added ClassModel.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
