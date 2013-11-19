@@ -42,9 +42,20 @@ namespace WebMaster.RawPatientFiles
                     newPatientCase.Symptoms += symptom3 + ";";
                 }
 
-                newPatientCase.Diagnose = line.Substring(54, 5);
+                var diagnose = line.Substring(54, 5);
 
-                if (newPatientCase.Symptoms.Length > 0 && newPatientCase.Diagnose.Trim().Length > 0)
+                if (diagnose.Substring(0, 1).ToLower() != "e" && diagnose.Substring(0, 1).ToLower() != "v")
+                {
+                    newPatientCase.Diagnose = diagnose;
+                }
+                else
+                {
+                    newPatientCase.Diagnose = "";
+                }
+
+                var majorReasonForVisit = line.Substring(53, 1);
+
+                if (majorReasonForVisit == "1" && newPatientCase.Symptoms.Length > 0 && newPatientCase.Diagnose.Trim().Length > 0)
                 {
                     PatientCaseRepository.Add(newPatientCase);
                 }

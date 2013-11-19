@@ -35,10 +35,6 @@ namespace WebMaster.Controllers
             //RawPatientFiles.ReadFile.Main();
 
             var test = PatientCaseRepository.GetAll();
-
-            var test2 = test.Where(x => x.Symptoms.Contains("10120")).ToList();
-
-            var test3 = test2.Count;
         }
     }
 }
