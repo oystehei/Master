@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using Master.Implementation;
+using WebMaster.Models;
 
 namespace WebMaster.Controllers
 {
@@ -16,11 +17,18 @@ namespace WebMaster.Controllers
 
         public ActionResult About()
         {
-            ViewBag.Message = "Your application description page.";
-
-            ReadFile();
-
             return View();
+        }
+
+        [HttpPost]
+        public ActionResult About(string code)
+        {
+            if (code == null) return View();
+
+            var matchingCases = PatientCaseRepository.GetAll().Where(x => x.Symptoms.Contains(code)).ToList();
+            var model = new AboutViewModel {Code = code, MatchingCases = matchingCases};
+
+            return View(model);
         }
 
         public ActionResult Contact()
