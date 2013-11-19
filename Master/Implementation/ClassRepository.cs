@@ -11,7 +11,7 @@ namespace Master.Implementation
    public static class ClassRepository
     {
        private static readonly DomainDbContext _db = new DomainDbContext();
-       /*
+
        public static List<ClassModel> GetAll()
        {
            return _db.ClassModels.ToList();
@@ -31,6 +31,6 @@ namespace Master.Implementation
 
            return result;
        }
-       */
+
     }
 }
