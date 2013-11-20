@@ -16,6 +16,7 @@ namespace Master.Models
         public string Symptoms { get; set; }
         public string Diagnose { get; set; }
         public virtual ClassModel ClassModel { get; set; }
+        public int[] FeatureVector { get; set; }
 
     }
 }
