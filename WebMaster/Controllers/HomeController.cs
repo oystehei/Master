@@ -15,8 +15,12 @@ namespace WebMaster.Controllers
             return View();
         }
 
-         public ActionResult About()
+        public ActionResult About()
         {
+            //var test = new iNNk("Global");
+            //test.LeaveOneOutTest();
+
+
             return View();
         }
 

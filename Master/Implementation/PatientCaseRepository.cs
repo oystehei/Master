@@ -43,6 +43,8 @@ namespace Master.Implementation
                 var s = patientCase.Symptoms.Split(';');
                 foreach (var symptom in s)
                 {
+                    if(symptom == "") continue;
+
                     var symptomAsInt = Convert.ToInt32(symptom);
                     var index = symptoms.IndexOf(symptomAsInt);
                     if (index == -1)
@@ -54,11 +56,11 @@ namespace Master.Implementation
             foreach (var patientCase in list)
             {
                 patientCase.FeatureVector = new int[5 + symptoms.Count];
-                patientCase.FeatureVector[0] = patientCase.Age;
+                patientCase.FeatureVector[0] = GetAgeGroup(patientCase.Age);
                 patientCase.FeatureVector[1] = patientCase.Sex;
                 patientCase.FeatureVector[2] = patientCase.Race;
                 patientCase.FeatureVector[3] = patientCase.TobaccoUse;
-                patientCase.FeatureVector[4] = Convert.ToInt32(patientCase.Bmi);
+                patientCase.FeatureVector[4] = GetBmiGroup(patientCase.Bmi);
                 for (int i = 0; i < symptoms.Count; i++)
                 {
                     if (patientCase.Symptoms.Contains(symptoms.ElementAt(i).ToString()))
@@ -72,6 +74,64 @@ namespace Master.Implementation
                 }
             }
             return list;
+        }
+
+        public static int GetAgeGroup(int age)
+        {
+            if (age == -9)
+            {
+                return age;
+            }
+            else if (age <= 2)
+            {
+                return 0;
+            }
+            else if (age <= 12)
+            {
+                return 1;
+            }
+            else if (age <= 20)
+            {
+                return 2;
+            }
+            else if (age <= 40)
+            {
+                return 3;
+            }
+            else if (age <= 60)
+            {
+                return 4;
+            }
+            else
+            {
+                return 5;
+            }
+        }
+
+        public static int GetBmiGroup(double bmi)
+        {
+            if (bmi > 0 && bmi < 18.5)
+            {
+                return 0;
+            }
+            else if (bmi < 25)
+            {
+                return 1;
+            }
+            else if (bmi < 30)
+            {
+                return 2;
+            }
+            else if (bmi < 35)
+            {
+                return 3;
+            }
+            else if (bmi < 40)
+            {
+                return 4;
+            }
+            
+            return -9;
         }
     }
 }

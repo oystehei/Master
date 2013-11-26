@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Master.Models;
 
 namespace Master.Implementation
@@ -62,12 +63,17 @@ namespace Master.Implementation
                 }
             }
 
-
             var highest = -1;
             var counter = 0;
             var featureIndex = 0;
             foreach (var feature in FeaturesWithPossibleValues)
             {
+                if (CurrentPatientCase.FeatureVector[counter] != -1)
+                {
+                    counter++;
+                    continue;
+                }
+
                 foreach (var value in feature)
                 {  
                     if (value == -9)
@@ -99,6 +105,7 @@ namespace Master.Implementation
                             }
                         }
                     }
+
                     var d = ((valueGivenClass / classCounter) - (valueGivenNotClass / notClassCounter)) / (feature.Count);
                     if (d <= highest) continue;
                     highest = d;
@@ -116,46 +123,84 @@ namespace Master.Implementation
             return (double)sim / storedCase.FeatureVector.Length;
         }
 
-        public void FindNewRetrievalSet()
+        public void FindNewRetrievalSet(int caseIndex)
         {
             RetrievalSet = new List<PatientCase>();
             var similiartyMap = CaseBase.ToDictionary(patientCase => patientCase, patientCase => Similarty(patientCase, CurrentPatientCase));
             similiartyMap = similiartyMap.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
+            var index = 0;
+
             foreach (var patientCase in similiartyMap)
             {
-                var count = similiartyMap.Count(otherCase => otherCase.Value > patientCase.Value);
-                if (count <= K)
-                {
-                    RetrievalSet.Add(patientCase.Key);
+                if (index != caseIndex) { 
+                    var count = similiartyMap.Count(otherCase => otherCase.Value > patientCase.Value);
+                    if (count <= K)
+                    {
+                        RetrievalSet.Add(patientCase.Key);
+                    }
                 }
+
+                index++;
             }
+        }
+
+        public bool NoMoreFeatures(int[] features)
+        {
+            if (features.Any(feature => feature == -1))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public void LeaveOneOutTest()
         {
-            var index = _rnd.Next(CaseBase.Count);
-            var leftOut = CaseBase.ElementAt(index);
-            CurrentPatientCase = new PatientCase
-            {
-                FeatureVector = Enumerable.Repeat(-1, CaseBase.First().FeatureVector.Length).ToArray()
-            };
-            var decided = false;
+            var correct = 0;
+            var index = 0;
 
-            RetrievalSet = CaseBase;
-            
-            while (!decided)
+            foreach (var patientCase in CaseBase)
             {
-                var targetClass = RetrievalSet.First().ClassModel.Class;
-                foreach (var patientCase in RetrievalSet)
+                index++;
+
+                var leftOut = patientCase;
+                CurrentPatientCase = new PatientCase
                 {
+                    FeatureVector = Enumerable.Repeat(-1, CaseBase.First().FeatureVector.Length).ToArray()
+                };
+                var decided = false;
 
+                RetrievalSet = CaseBase;
+                var targetClass = new ClassModel();
+            
+                while (true)
+                {
+                    var diagnoseGroups = RetrievalSet.GroupBy(x => x.ClassModel);
+
+                    targetClass = diagnoseGroups.OrderBy(x => x.Count()).Reverse().First().First().ClassModel;
+
+                    if (diagnoseGroups.Count() == 1 || diagnoseGroups.First().Count() > RetrievalSet.Count*(8.0/10.0))
+                    {
+                        break;
+                    }
+                    else if (NoMoreFeatures(CurrentPatientCase.FeatureVector))
+                    {
+                        break;
+                    }
+
+                    var featureIndex = FindNextFeatureIndex(RetrievalSet, targetClass);
+
+                    CurrentPatientCase.FeatureVector[featureIndex] = leftOut.FeatureVector[featureIndex];
+                    FindNewRetrievalSet(index);
                 }
-                //TODO: FINISH THIS....
-                
+
+                if (targetClass == leftOut.ClassModel) correct++;
             }
 
+            var test = correct;
         }
+
 
     }
 }
