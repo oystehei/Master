@@ -42,7 +42,7 @@ namespace Master.Implementation
                 }
             }
         }
-        public int FindNextFeatureIndex(List<PatientCase> retrievalSet, ClassModel targetClass)
+        public int FindNextFeatureIndex(ClassModel targetClass, int id)
         {
             //If Local find FeaturesWithPossibleValues for the current retirevalset
             if (LocalOrGlobal == "Local")
@@ -52,7 +52,7 @@ namespace Master.Implementation
                 for (int i = 0; i < CurrentPatientCase.FeatureVector.Length; i++)
                 {
                     FeaturesWithPossibleValues.Add(new List<int>());
-                    foreach (var patientCase in retrievalSet)
+                    foreach (var patientCase in RetrievalSet)
                     {
                         var featureValue = patientCase.FeatureVector[i];
                         if (!FeaturesWithPossibleValues.ElementAt(i).Contains(featureValue))
@@ -63,7 +63,7 @@ namespace Master.Implementation
                 }
             }
 
-            var highest = -1;
+            var highest = -1.0;
             var counter = 0;
             var featureIndex = 0;
             foreach (var feature in FeaturesWithPossibleValues)
@@ -81,12 +81,17 @@ namespace Master.Implementation
                         continue;
                     }
                     
-                    var valueGivenClass = 0;
-                    var classCounter = 0;
-                    var notClassCounter = 0;
-                    var valueGivenNotClass = 0;
-                    foreach (var patientCase in retrievalSet)
+                    var valueGivenClass = 0.0;
+                    var classCounter = 0.0;
+                    var notClassCounter = 0.0;
+                    var valueGivenNotClass = 0.0;
+
+                    var cases = LocalOrGlobal == "Global" ? CaseBase : RetrievalSet;
+
+                    foreach (var patientCase in cases)
                     {
+                        if (patientCase.Id == id) { continue;}
+
                         var featureValue = patientCase.FeatureVector[counter];
                         if (patientCase.ClassModel.Class == targetClass.Class)
                         {
@@ -123,64 +128,55 @@ namespace Master.Implementation
             return (double)sim / storedCase.FeatureVector.Length;
         }
 
-        public void FindNewRetrievalSet(int caseIndex)
+        public void FindNewRetrievalSet(int caseId)
         {
             RetrievalSet = new List<PatientCase>();
             var similiartyMap = CaseBase.ToDictionary(patientCase => patientCase, patientCase => Similarty(patientCase, CurrentPatientCase));
             similiartyMap = similiartyMap.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
-            var index = 0;
-
             foreach (var patientCase in similiartyMap)
             {
-                if (index != caseIndex) { 
+                if (patientCase.Key.Id != caseId)
+                { 
                     var count = similiartyMap.Count(otherCase => otherCase.Value > patientCase.Value);
                     if (count <= K)
                     {
                         RetrievalSet.Add(patientCase.Key);
                     }
                 }
-
-                index++;
             }
         }
 
         public bool NoMoreFeatures(int[] features)
         {
-            if (features.Any(feature => feature == -1))
-            {
-                return false;
-            }
-
-            return true;
+            return !features.Any(feature => feature == -1);
         }
 
         public void LeaveOneOutTest()
         {
             var correct = 0;
             var index = 0;
-
+            var totalNumberOfFeaturesAsked = 0;
             foreach (var patientCase in CaseBase)
             {
-                index++;
+                
 
                 var leftOut = patientCase;
                 CurrentPatientCase = new PatientCase
                 {
                     FeatureVector = Enumerable.Repeat(-1, CaseBase.First().FeatureVector.Length).ToArray()
                 };
-                var decided = false;
 
                 RetrievalSet = CaseBase;
                 var targetClass = new ClassModel();
-            
+                var numberOfFeaturesAsked = 0;
                 while (true)
                 {
-                    var diagnoseGroups = RetrievalSet.GroupBy(x => x.ClassModel);
+                    var diagnoseGroups = RetrievalSet.GroupBy(x => x.ClassModel).OrderBy(x => x.Count()).Reverse();
 
-                    targetClass = diagnoseGroups.OrderBy(x => x.Count()).Reverse().First().First().ClassModel;
+                    targetClass = diagnoseGroups.First().First().ClassModel;
 
-                    if (diagnoseGroups.Count() == 1 || diagnoseGroups.First().Count() > RetrievalSet.Count*(8.0/10.0))
+                    if (diagnoseGroups.Count() == 1 || diagnoseGroups.First().Count() > RetrievalSet.Count*(5.5/10.0))
                     {
                         break;
                     }
@@ -189,15 +185,19 @@ namespace Master.Implementation
                         break;
                     }
 
-                    var featureIndex = FindNextFeatureIndex(RetrievalSet, targetClass);
+                    var featureIndex = FindNextFeatureIndex(targetClass, leftOut.Id);
 
                     CurrentPatientCase.FeatureVector[featureIndex] = leftOut.FeatureVector[featureIndex];
-                    FindNewRetrievalSet(index);
-                }
+                    numberOfFeaturesAsked++;
 
+                    FindNewRetrievalSet(leftOut.Id);
+
+                }
+                index++;
+                totalNumberOfFeaturesAsked += numberOfFeaturesAsked;
                 if (targetClass == leftOut.ClassModel) correct++;
             }
-
+            var eff = (double) totalNumberOfFeaturesAsked/(CaseBase.Count()*CaseBase.First().FeatureVector.Length);
             var test = correct;
         }
 

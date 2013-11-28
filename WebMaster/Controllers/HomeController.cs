@@ -17,8 +17,8 @@ namespace WebMaster.Controllers
 
         public ActionResult About()
         {
-            //var test = new iNNk("Global");
-            //test.LeaveOneOutTest();
+            var test = new iNNk("Local", 1);
+            test.LeaveOneOutTest();
 
 
             return View();
@@ -130,6 +130,13 @@ namespace WebMaster.Controllers
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
+
+            var list = PatientCaseRepository.GetAll();
+            foreach (var patientCase in list.Where(x => x.ClassModel.Class == 251))
+            {
+                PatientCaseRepository.Delete(patientCase.Id);
+            }
+           
 
             return View();
         }
