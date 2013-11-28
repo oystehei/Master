@@ -53,6 +53,7 @@
     <Compile Include="Implementation\ClassRepository.cs" />
     <Compile Include="Implementation\DomainDbContext.cs" />
     <Compile Include="Implementation\iNNk.cs" />
+    <Compile Include="Implementation\NaCoDAE.cs" />
     <Compile Include="Implementation\PatientCaseRepository.cs" />
     <Compile Include="Migrations\201311191006096_tt.cs" />
     <Compile Include="Migrations\201311191006096_tt.Designer.cs">
