@@ -67,12 +67,12 @@ namespace WebMaster.Controllers
                 })
                 .SetYAxis(new YAxis()
                 {
-                    Title = new YAxisTitle() {Text = "Kr"}
-                })
+                    Title = new YAxisTitle() {Text = "%"}
+                }).SetExporting(new Exporting { Enabled = true })
                 .SetSeries(
                     HighchartCalc.GetDataForFirstComeFirstComeHighchartModel(from,thBest,thBestRange,ticks)
                 )
-                .SetTitle(new Title() {Text = "tt", VerticalAlign = VerticalAligns.Top})
+                .SetTitle(new Title() {Text = "Treshhold on Best Score", VerticalAlign = VerticalAligns.Top})
                 .SetPlotOptions(new PlotOptions()
                 {
                     Line = new PlotOptionsLine()
@@ -87,10 +87,42 @@ namespace WebMaster.Controllers
 
             return PartialView(highchart);
         }
+        public ActionResult GetChartAverage(int from, double thBest, double thBestRange, double ticks)
+        {
+            var highchart = new DotNet.Highcharts.Highcharts("chart2")
+                .SetXAxis(new XAxis
+                {
+
+                    //DateTimeLabelFormats = new DateTimeLabel() { Day = "%d" }
+
+                })
+                .SetExporting(new Exporting { Enabled = true })
+                .SetYAxis(new YAxis()
+                {
+                    Title = new YAxisTitle() { Text = "%" }
+                })
+                .SetSeries(
+                    HighchartCalc.GetDataForFirstComeFirstComeHighchartModel(from, thBest, thBestRange, ticks, true)
+                )
+                .SetTitle(new Title() { Text = "Treshhold on Average score", VerticalAlign = VerticalAligns.Top })
+                .SetPlotOptions(new PlotOptions()
+                {
+                    Line = new PlotOptionsLine()
+                    {
+                        Animation = new Animation(new AnimationConfig() { Duration = 2000, Easing = EasingTypes.Swing }),
+                        PointStart = new PointStart(thBest),
+                        PointInterval = ticks
+                    },
+
+
+                });
+
+            return PartialView(highchart);
+        }
 
         public ActionResult GetChart2()
         {
-            Highcharts chart = new Highcharts("chart")
+            Highcharts chart = new Highcharts("chart2")
                 .InitChart(new Chart
                 {
                     DefaultSeriesType = ChartTypes.Line,

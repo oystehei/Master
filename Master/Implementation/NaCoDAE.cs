@@ -20,6 +20,7 @@ namespace Master.Implementation
         public NaCoDAE()
         {
             CaseBase = PatientCaseRepository.ClusterCases();
+          //  CaseBase = PatientCaseRepository.GetAll();
         }
 
         public void GetMaxSymtoms(int startSymptom = 5)
@@ -187,7 +188,7 @@ namespace Master.Implementation
                         CurrentQuery.Add(nextQuestion);
                         QuerySimilarity();
                         numOfQuestionsAsked++;
-
+                        var ordered = Scores.OrderByDescending(x => x.Score).Select(x => new { x.Case, x.Score }).ToList();
                         var test2 = Scores.OrderByDescending(x => x.Score).Take(takeFromScores).Select(x => new {x.Case, x.Score}).ToList();
                         RetrievalSet = test2.Select(x => x.Case).ToList();
 
@@ -197,6 +198,7 @@ namespace Master.Implementation
 
                         if (treshholdBestScore != 0.0)
                         {
+                            var tt = ordered;
                             if (test2.Select(x => x.Score).First() >= treshholdBestScore) break;
                         }
                         if (treshholdAverageScore != 0.0)
@@ -224,7 +226,7 @@ namespace Master.Implementation
                 NumberOfMatchingCases = Math.Round((double)correct/(double)rounds,2),
                 CaseBaseCount = Math.Round(CaseBase.Count/(double)rounds,2),
                 Effectiveness = Math.Round(effectiveness/(double)rounds,2),
-                NumberOfQuestionsAsked = Math.Round(numOfQuestionsAsked/(double)rounds,2),
+                NumberOfQuestionsAsked = Math.Round((numOfQuestionsAsked/CaseBase.Count)/(double)rounds,2),
                 PercentCorrect = Math.Round(((double)correct / (double)CaseBase.Count)/(double)rounds,2),
                 TakeFromScores = takeFromScores,
                 Score = Math.Round(score,2),

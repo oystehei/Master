@@ -5,6 +5,7 @@
 }
 <script type="text/javascript" src="~/Scripts/jquery-1.10.2.min.js"></script>
 <script type="text/javascript" src="~/Scripts/Highcharts-3.0.1/js/highcharts.js"></script>
+<script type="text/javascript" src="~/Scripts/Highcharts-3.0.1/js/themes/dark-blue.js"></script>
 <div class="row">
     <div class="col-md-12">
 
@@ -64,10 +65,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 5%; text-align: left">
+                        <th style="width: 10%; text-align: left">
                             NOR
                         </th>
-                        <th style="width: 5%; text-align: left">
+                        <th style="width: 10%; text-align: left">
                             NTT
                         </th>
 
@@ -131,6 +132,9 @@
     <div id="chartSection">
         
     </div>
+    <div id="chartSection2">
+
+    </div>
 </section>
 <div class="row">
     <div class="col-md-12">
@@ -175,12 +179,28 @@
             success: function (data) {
 
                 $("#chartSection").html(data);
+                $.ajax({
+                    url: '@Url.Action("GetChartAverage")',
+                    dataType: 'html',
+                    type: "POST",
+                    data: { thBestRange: thBestTo, thBest: thBest, from: nOCases, ticks: ticks },
+                    success: function (data) {
+
+                        $("#chartSection2").html(data);
+                    },
+                    error: function (data) {
+
+                        console.log("Failed to navigate!");
+                    }
+                });
             },
             error: function (data) {
 
                 console.log("Failed to navigate!");
             }
         });
+        
+        
         
     });
 </script>

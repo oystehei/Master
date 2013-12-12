@@ -146,6 +146,9 @@ namespace Master.Implementation
         {
             var vanillaCases = GetAll();
 
+            //var numberOfCases = vanillaCases.Count/2;
+           // vanillaCases = vanillaCases.OrderBy(r => Guid.NewGuid()).Take((int) numberOfCases).ToList();
+            
             var groups = ClassRepository.GetAll().ToDictionary(diagnose => diagnose.Class, diagnose => new List<PatientCase>());
 
             foreach (var vanillaCase in vanillaCases)
