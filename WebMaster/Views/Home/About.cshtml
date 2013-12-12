@@ -3,33 +3,185 @@
 @{
     ViewBag.Title = "About";
 }
-
+<script type="text/javascript" src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="~/Scripts/Highcharts-3.0.1/js/highcharts.js"></script>
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-12">
 
         @using (Html.BeginForm("About", "Home", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
         {
             @Html.AntiForgeryToken()
-
+            <br />
             <div class="form-group">
-                <label for="code">Code</label>
-                <div class="col-md-10">
-                    <input type="text" name="code" placeholder="Code" />
+
+                <div class="col-md-6">
+                    <div class="row">
+                        <label>From</label>
+
+                        @Html.TextBoxFor(x => x.From, new { @class = "pull-right" })
+                        <br />
+                        <label>To</label>
+                        @Html.TextBoxFor(x => x.To, new { @class = "pull-right" })
+                        <br />
+                        <label>Number of Rounds</label>
+                        @Html.TextBoxFor(x => x.NumberOfRounds, new { @class = "pull-right" })
+                        <br />
+                        <label>TH Best</label>
+                        @Html.TextBoxFor(x => x.ThBest, new { @class = "pull-right" })
+                        <br />
+                        <label>TH Average</label>
+                        @Html.TextBoxFor(x => x.ThAverage, new { @class = "pull-right" })
+                    </div>
                 </div>
             </div>
 
             <div class="form-group">
-                <div class="col-md-offset-2 col-md-10">
-                    <input type="submit" value="Find" class="btn btn-default" />
+                <div class=" col-md-6">
+                    <input type="submit" value="Find" class="btn btn-default pull-right" />
                 </div>
             </div>
         }
 
-        @if (Model != null)
+        @if (Model.LeaveOneOutResultModel != null)
         {
-            <p> Number of cases for @Model.Code: @Model.MatchingCases.Count()</p>
+            <h4>NOR = Number of Rounds Average  </h4>
+            <h4>
+                NTT=Number To Take
+            </h4>
+            <h4>
+                E = Effectiveness
+            </h4>
+            <h4>
+                QA = Questions asked
+            </h4>
+            <h4>
+                NOMC = Number of matching cases
+            </h4>
+            <h4>
+                PC = Percent correct
+            </h4>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%; text-align: left">
+                            NOR
+                        </th>
+                        <th style="width: 5%; text-align: left">
+                            NTT
+                        </th>
+
+                        <th style="width: 15%; text-align: left">
+                            E
+                        </th>
+                        <th style="width: 15%; text-align: left">
+                            NOMC
+                        </th>
+                        <th style="width: 15%; text-align: left">
+                            QA
+                        </th>
+                        <th style="width: 15%; text-align: left">
+                            PC
+                        </th>
+                        <th style="width: 15%; text-align: left">
+                            BS
+                        </th>
+                        <th style="width: 15%; text-align: left">
+                            AS
+                        </th>
+
+
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var result in Model.LeaveOneOutResultModel)
+                    {
+                        <tr>
+                            <td>@Model.NumberOfRounds</td>
+                            <td>@result.TakeFromScores</td>
+
+                            <td>
+                                @result.Effectiveness
+                            </td>
+                            <td>
+                                @result.NumberOfMatchingCases
+                            </td>
+                            <td>
+                                @result.NumberOfQuestionsAsked
+                            </td>
+                            <td>
+                                @result.PercentCorrect
+                            </td>
+                            <td>@result.Score</td>
+                            <td>@result.AverageScore</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         }
-        
+
+
+
+       
     </div>
 </div>
+
+<section>
+    <div id="chartSection">
+        
+    </div>
+</section>
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+
+            <div class="col-md-6">
+                <div class="row">
+                    <label>Number of cases</label>
+                    <input type="text" name="nOCases" class="pull-right" id="nOCases" />
+                    <br/>
+                    <label>TH Best From</label>
+                    <input type="text" name="thBest" class="pull-right"  id="thBest" />
+                    <br />
+                    <label>Th Best To</label>
+                    <input type="text" name="thBestTo" class="pull-right" id="thBestTo" />
+                    <br />
+                    <label>Ticks</label>
+                    <input type="text" name="ticks" class="pull-right" id="ticks" />
+                    <br />
+                    <br/>
+                    <input type="button" class="btn btn-primary pull-right" id="getChart" value="Get Chart"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+
+    $("#getChart").click(function() {
+        console.log("click");
+        var nOCases = $("#nOCases").val();
+        var thBest = $("#thBest").val();
+        var thBestTo = $("#thBestTo").val();
+        var ticks = $("#ticks").val();
+        console.log( nOCases + " " + thBest + " " + thBestTo + " " +ticks);
+        $.ajax({
+            url: '@Url.Action("GetChart")',
+            dataType: 'html',
+            type: "POST",
+            data: { thBestRange: thBestTo, thBest: thBest, from: nOCases, ticks: ticks },
+            success: function (data) {
+
+                $("#chartSection").html(data);
+            },
+            error: function (data) {
+
+                console.log("Failed to navigate!");
+            }
+        });
+        
+    });
+</script>
 

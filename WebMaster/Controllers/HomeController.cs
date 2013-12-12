@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Net.Mime;
 using System.Web;
 using System.Web.Mvc;
+using DotNet.Highcharts;
+using DotNet.Highcharts.Enums;
+using DotNet.Highcharts.Helpers;
+using DotNet.Highcharts.Options;
 using Master.Implementation;
 using WebMaster.Models;
 
@@ -20,24 +26,147 @@ namespace WebMaster.Controllers
             //var test = new iNNk("Global", 1);
             //test.LeaveOneOutTest();
 
-            var test = new NaCoDAE();
-            test.LeaveOneOutTest();
+            //var test = new NaCoDAE();
+            //test.LeaveOneOutTest();
 
-            return View();
+            return View(new AboutViewModel{From = 1, To = 5,NumberOfRounds = 1, ThAverage = 1.8, ThBest = 1.9});
         }
 
         [HttpPost]
-        public ActionResult About(string code)
+        public ActionResult About(AboutViewModel model)
         {
-            if (code == null) return View();
+           
 
-            var matchingCases = PatientCaseRepository.GetAll().Where(x => x.Symptoms.Contains(code)).ToList();
-            var model = new AboutViewModel {Code = code, MatchingCases = matchingCases};
+            var naCoDAE = new NaCoDAE();
+
+            
+
+            var returnList = new List<LeaveOneOutResultModel>();
+
+            for (int i = model.From; i <= model.To; i++)
+            {
+
+                returnList.Add(naCoDAE.LeaveOneOutTest(i, model.NumberOfRounds, model.ThBest, model.ThAverage));
+            }
+           // var matchingCases = PatientCaseRepository.GetAll().Where(x => x.Symptoms.Contains(code)).ToList();
+            model.LeaveOneOutResultModel = returnList;
+            
 
             return View(model);
         }
 
 
+        public ActionResult GetChart(int from, double thBest, double thBestRange, double ticks )
+        {
+            var highchart = new DotNet.Highcharts.Highcharts("chart")
+                .SetXAxis(new XAxis
+                {
+                    
+                    //DateTimeLabelFormats = new DateTimeLabel() { Day = "%d" }
+
+                })
+                .SetYAxis(new YAxis()
+                {
+                    Title = new YAxisTitle() {Text = "Kr"}
+                })
+                .SetSeries(
+                    HighchartCalc.GetDataForFirstComeFirstComeHighchartModel(from,thBest,thBestRange,ticks)
+                )
+                .SetTitle(new Title() {Text = "tt", VerticalAlign = VerticalAligns.Top})
+                .SetPlotOptions(new PlotOptions()
+                {
+                    Line = new PlotOptionsLine()
+                    {
+                        Animation = new Animation(new AnimationConfig() {Duration = 2000, Easing = EasingTypes.Swing}),
+                        PointStart = new PointStart(thBest),
+                        PointInterval = ticks
+                    },
+                   
+                    
+                });
+
+            return PartialView(highchart);
+        }
+
+        public ActionResult GetChart2()
+        {
+            Highcharts chart = new Highcharts("chart")
+                .InitChart(new Chart
+                {
+                    DefaultSeriesType = ChartTypes.Line,
+                    MarginRight = 130,
+                    MarginBottom = 25,
+                    ClassName = "chart"
+                })
+                .SetTitle(new Title
+                {
+                    Text = "Monthly Average Temperature",
+                    X = -20
+                })
+                .SetSubtitle(new Subtitle
+                {
+                    Text = "Source: WorldClimate.com",
+                    X = -20
+                })
+                .SetXAxis(new XAxis { Categories = ChartsData.Categories })
+                .SetYAxis(new YAxis
+                {
+                    Title = new YAxisTitle { Text = "Temperature (°C)" },
+                    PlotLines = new[]
+                            {
+                                new YAxisPlotLines
+                                    {
+                                        Value = 0,
+                                        Width = 1,
+                                        Color = ColorTranslator.FromHtml("#808080")
+                                    }
+                            }
+                })
+                .SetTooltip(new Tooltip
+                {
+                    Formatter = @"function() {
+                                        return '<b>'+ this.series.name +'</b><br/>'+
+                                    this.x +': '+ this.y +'°C';
+                                }"
+                })
+                .SetLegend(new Legend
+                {
+                    Layout = Layouts.Vertical,
+                    Align = HorizontalAligns.Right,
+                    VerticalAlign = VerticalAligns.Top,
+                    X = -10,
+                    Y = 100,
+                    BorderWidth = 0
+                })
+                .SetSeries(new[]
+                    {
+                        new Series { Name = "Tokyo", Data = new Data(ChartsData.TokioData) },
+                        new Series { Name = "New York", Data = new Data(ChartsData.NewYorkData) },
+                        new Series { Name = "Berlin", Data = new Data(ChartsData.BerlinData) },
+                        new Series { Name = "London", Data = new Data(ChartsData.LondonData) }
+                    }
+                );
+
+            return PartialView(chart);
+        }
+
+        public class ChartsData
+        {
+            public static object[] BerlinData = new object[]
+            {-0.9, 0.6, 3.5, 8.4, 13.5, 17.0, 18.6, 17.9, 14.3, 9.0, 3.9, 1.0};
+
+            public static string[] Categories = new[]
+            {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+            public static object[] LondonData = new object[]
+            {3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8};
+
+            public static object[] NewYorkData = new object[]
+            {-0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5};
+
+            public static object[] TokioData = new object[]
+            {7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6};
+        }
 
         public void AddNewClassesToModel()
         {
