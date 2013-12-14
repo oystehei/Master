@@ -10,6 +10,7 @@ namespace Master.Implementation
     public class NaCoDAE
     {
         public List<PatientCase> CaseBase { get; set; }
+        public List<PatientCase> QueryCases { get; set; }
         public int MaxSymptoms { get; set; }
         public PatientCase CurrentQueryCase { get; set; }
         public List<PatientCase> RetrievalSet { get; set; }
@@ -19,8 +20,8 @@ namespace Master.Implementation
 
         public NaCoDAE()
         {
-            CaseBase = PatientCaseRepository.ClusterCases();
-          //  CaseBase = PatientCaseRepository.GetAll();
+            CaseBase = PatientCaseRepository.GetAll();
+            QueryCases = PatientCaseRepository.GetAll();
         }
 
         public void GetMaxSymtoms(int startSymptom = 5)
@@ -49,13 +50,13 @@ namespace Master.Implementation
             {
                 //if (patientCase != CurrentQueryCase)
                 //{
-                var ageDiff = Math.Abs(patientCase.Age - CurrentQueryCase.Age);
-                var bmiDiff = Math.Abs(patientCase.Bmi - CurrentQueryCase.Bmi);
-                var sameSex = patientCase.Sex != -9 && CurrentQueryCase.Sex != -9 && patientCase.Sex == CurrentQueryCase.Sex ? 0.2 : 0.0;
-                var sameTobacco = patientCase.TobaccoUse == CurrentQueryCase.TobaccoUse ? 0.2 : 0.0;
-                var sameRace = patientCase.Race == CurrentQueryCase.Race ? 0.2 : 0.0;
+                var ageDiff = Math.Abs(patientCase.FeatureVector[0] - CurrentQueryCase.FeatureVector[0]);
+                var bmiDiff = Math.Abs(patientCase.FeatureVector[4] - CurrentQueryCase.FeatureVector[4]);
+                var sameSex = patientCase.FeatureVector[1] != -9 && CurrentQueryCase.FeatureVector[1] != -9 && patientCase.FeatureVector[1] == CurrentQueryCase.FeatureVector[1] ? 0.2 : 0.0;
+                var sameTobacco = patientCase.FeatureVector[3] == CurrentQueryCase.FeatureVector[3] ? 0.2 : 0.0;
+                var sameRace = patientCase.FeatureVector[2] == CurrentQueryCase.FeatureVector[2] ? 0.2 : 0.0;
 
-                var score = (0.2 - (ageDiff * 0.04)) + (0.2 - (bmiDiff * 0.05)) + sameSex + sameTobacco + sameRace;
+                var score = (0.2 - (ageDiff * 0.04)) + (0.2 - (bmiDiff * 0.04)) + sameSex + sameTobacco + sameRace;
 
                 scores.Add(new ScoreObject { Case = patientCase, Score = score });
                 //}
@@ -162,15 +163,12 @@ namespace Master.Implementation
             var averageScore = 0.0;
             var score = 0.0;
 
-          
-
-
             for (int i = 0; i < rounds; i++)
             {
 
                 GetMaxSymtoms();
 
-                foreach (var patientCase in CaseBase)
+                foreach (var patientCase in QueryCases)
                 {
                     CurrentQueryCase = patientCase;
                     InitialSimilarity();
@@ -224,15 +222,15 @@ namespace Master.Implementation
             var test = (CaseBase.Count * (CaseBase.ElementAt(0).FeatureVector.Length - 5));
 
 
-            var effectiveness = numOfQuestionsAsked / (CaseBase.Count * (CaseBase.ElementAt(0).FeatureVector.Length - 5));
+            var effectiveness = numOfQuestionsAsked / (QueryCases.Count * (CaseBase.ElementAt(0).FeatureVector.Length - 5));
             
             return new LeaveOneOutResultModel()
             {
                 NumberOfMatchingCases = Math.Round((double)correct/(double)rounds,2),
                 CaseBaseCount = Math.Round(CaseBase.Count/(double)rounds,2),
                 Effectiveness = Math.Round(effectiveness/(double)rounds,2),
-                NumberOfQuestionsAsked = Math.Round((numOfQuestionsAsked/CaseBase.Count)/(double)rounds,2),
-                PercentCorrect = Math.Round(((double)correct / (double)CaseBase.Count)/(double)rounds,2),
+                NumberOfQuestionsAsked = Math.Round((numOfQuestionsAsked/QueryCases.Count)/(double)rounds,2),
+                PercentCorrect = Math.Round(((double)correct / (double)QueryCases.Count)/(double)rounds,2),
                 TakeFromScores = takeFromScores,
                 Score = Math.Round(score,2),
                 AverageScore = Math.Round(averageScore,2)

@@ -138,6 +138,10 @@ namespace Master.Implementation
             {
                 return 4;
             }
+            else if (bmi > 40)
+            {
+                return 5;
+            }
             
             return -9;
         }
