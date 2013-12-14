@@ -212,7 +212,12 @@ namespace Master.Implementation
                     score = bestTempScore/questionCounter;
 
                     numberOfcases++;
-                    if (RetrievalSet.ElementAt(0).ClassModel == CurrentQueryCase.ClassModel) correct++;
+                    //if (RetrievalSet.ElementAt(0).ClassModel == CurrentQueryCase.ClassModel) correct++;
+                    if (
+                        RetrievalSet.Select(x => x.ClassModel)
+                            .Take(3).ToList()
+                            
+                            .Contains(CurrentQueryCase.ClassModel)) correct ++;
                 }
 
             }

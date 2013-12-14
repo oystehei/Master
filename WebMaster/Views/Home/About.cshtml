@@ -5,7 +5,7 @@
 }
 <script type="text/javascript" src="~/Scripts/jquery-1.10.2.min.js"></script>
 <script type="text/javascript" src="~/Scripts/Highcharts-3.0.1/js/highcharts.js"></script>
-<script type="text/javascript" src="~/Scripts/Highcharts-3.0.1/js/themes/dark-blue.js"></script>
+
 <div class="row">
     <div class="col-md-12">
 
@@ -45,19 +45,18 @@
 
         @if (Model.LeaveOneOutResultModel != null)
         {
-            <h4>NOR = Number of Rounds Average  </h4>
+           
             <h4>
                 NTT=Number To Take
+            </h4>
+             <h4>
+                QA = Questions asked average on each case
             </h4>
             <h4>
                 E = Effectiveness
             </h4>
-            <h4>
-                QA = Questions asked
-            </h4>
-            <h4>
-                NOMC = Number of matching cases
-            </h4>
+           
+            
             <h4>
                 PC = Percent correct
             </h4>
@@ -65,31 +64,21 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 10%; text-align: left">
-                            NOR
-                        </th>
+                        
                         <th style="width: 10%; text-align: left">
                             NTT
                         </th>
 
                         <th style="width: 15%; text-align: left">
-                            E
-                        </th>
-                        <th style="width: 15%; text-align: left">
-                            NOMC
-                        </th>
-                        <th style="width: 15%; text-align: left">
                             QA
+                        </th>
+                        <th style="width: 15%; text-align: left">
+                            E
                         </th>
                         <th style="width: 15%; text-align: left">
                             PC
                         </th>
-                        <th style="width: 15%; text-align: left">
-                            BS
-                        </th>
-                        <th style="width: 15%; text-align: left">
-                            AS
-                        </th>
+                        
 
 
 
@@ -99,23 +88,19 @@
                     @foreach (var result in Model.LeaveOneOutResultModel)
                     {
                         <tr>
-                            <td>@Model.NumberOfRounds</td>
+                            
                             <td>@result.TakeFromScores</td>
 
-                            <td>
-                                @result.Effectiveness
-                            </td>
-                            <td>
-                                @result.NumberOfMatchingCases
-                            </td>
                             <td>
                                 @result.NumberOfQuestionsAsked
                             </td>
                             <td>
+                                @result.Effectiveness
+                            </td>
+                            <td>
                                 @result.PercentCorrect
                             </td>
-                            <td>@result.Score</td>
-                            <td>@result.AverageScore</td>
+                          
                         </tr>
                     }
                 </tbody>
