@@ -20,8 +20,8 @@ namespace Master.Implementation
 
         public NaCoDAE()
         {
-            CaseBase = PatientCaseRepository.GetAll();
-            QueryCases = PatientCaseRepository.GetAll();
+            CaseBase = PatientCaseRepository.ClusterCases();
+            QueryCases = PatientCaseRepository.ClusterCases();
         }
 
         public void GetMaxSymtoms(int startSymptom = 5)
@@ -90,8 +90,15 @@ namespace Master.Implementation
                 var queryScore = (sameAnswers - differentAnswers) / QuestionAnswerPairs(patientCase);
                 var unbiasedScore = GetUnbiasedScore(queryScore, 0.5);
                 var initialScore = GetInitialScoreForClass(patientCase);
-
-                scores.Add(new ScoreObject { Case = patientCase, Score = initialScore + unbiasedScore });
+                if (queryScore <= 0.1)
+                {
+                    var test = queryScore;
+                }
+                if (queryScore != 0.0)
+                {
+                    var bla = queryScore;
+                }
+                scores.Add(new ScoreObject { Case = patientCase, Score = initialScore });
                 //}
             }
 
@@ -163,6 +170,10 @@ namespace Master.Implementation
             var averageScore = 0.0;
             var score = 0.0;
 
+            var testModel = 0;
+            
+
+
             for (int i = 0; i < rounds; i++)
             {
 
@@ -170,6 +181,7 @@ namespace Master.Implementation
 
                 foreach (var patientCase in QueryCases)
                 {
+                    if (CaseBase.Count(x => x.ClassModel.Class == patientCase.ClassModel.Class) > 0) testModel ++;
                     CurrentQueryCase = patientCase;
                     InitialSimilarity();
 
@@ -212,10 +224,10 @@ namespace Master.Implementation
                     numberOfcases++;
                     //if (RetrievalSet.ElementAt(0).ClassModel == CurrentQueryCase.ClassModel) correct++;
                     if (
-                        RetrievalSet.Select(x => x.ClassModel)
-                            .Take(3).ToList()
+                        RetrievalSet.Select(x => x.ClassModel.Class)
+                            .Take(takeFromScores).ToList()
                             
-                            .Contains(CurrentQueryCase.ClassModel)) correct ++;
+                            .Contains(CurrentQueryCase.ClassModel.Class)) correct ++;
                 }
 
             }
